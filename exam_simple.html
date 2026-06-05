@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>労働衛生コンサルタント試験 口述練習</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        header p {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
+            color: #1565c0;
+            margin-bottom: 15px;
+        }
+        
+        .question-card {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .question-number {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .question-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            min-height: 120px;
+            margin-bottom: 10px;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            flex: 1;
+        }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover { background: #e0e0e0; }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        .btn-danger:hover { background: #da190b; }
+        
+        .timer {
+            font-size: 36px;
+            font-weight: bold;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        .timer.warning { color: #ff9800; }
+        .timer.danger { color: #f44336; animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-fill {
+            background: #667eea;
+            height: 100%;
+            transition: width 0.3s;
+        }
+        
+        .result-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ddd;
+        }
+        .result-question {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .result-answer {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .result-date {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 600px) {
+            header h1 { font-size: 18px; }
+            .question-text { font-size: 14px; }
+            .timer { font-size: 28px; }
+            .tabs { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 労働衛生コンサルタント試験 口述練習</h1>
+            <p>40問を使った口述試験シミュレーター | API キー・バックエンド不要</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('practice')">📝 練習する</button>
+            <button class="tab-btn" onclick="switchTab('history')">📋 回答履歴</button>
+        </div>
+        
+        <!-- === 練習タブ === -->
+        <div id="practice" class="tab-content active">
+            <div class="info-box">
+                ✅ セットアップ不要。今すぐ始めることができます。
+            </div>
+            
+            <div id="startScreen">
+                <button class="btn-primary" onclick="startPractice()" style="width: 100%; padding: 15px; font-size: 16px;">🚀 練習開始</button>
+            </div>
+            
+            <div id="practiceScreen" style="display: none;">
+                <div class="timer" id="timer">15:00</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p style="text-align: center; margin-bottom: 15px; color: #666; font-size: 13px;">
+                    問 <strong id="currentQuestion">1</strong> / <strong id="totalQuestions">0</strong>
+                </p>
+                
+                <div class="question-card">
+                    <div class="question-number" id="questionMeta"></div>
+                    <div class="question-text" id="questionText"></div>
+                </div>
+                
+                <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">あなたの回答：</label>
+                <textarea id="answerText" placeholder="ここに回答を入力してください..."></textarea>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="saveAndNext()">✓ 保存して次へ</button>
+                    <button class="btn-secondary" onclick="skipQuestion()">⏭ スキップ</button>
+                </div>
+                <button class="btn-danger" onclick="endPractice()" style="width: 100%; margin-top: 10px;">終了</button>
+            </div>
+        </div>
+        
+        <!-- === 履歴タブ === -->
+        <div id="history" class="tab-content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalAnswers">0</div>
+                    <div class="stat-label">回答数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSessions">0</div>
+                    <div class="stat-label">練習セッション</div>
+                </div>
+            </div>
+            
+            <div id="historyList" style="max-height: 500px; overflow-y: auto;"></div>
+            <button class="btn-danger" onclick="clearHistory()" style="width: 100%; margin-top: 20px;">🗑 履歴をクリア</button>
+        </div>
+    </div>
+    
+    <script>
+        // === データ ===
+        const questions = [
+            {"text": "有機溶剤について説明してください", "field": "有機溶剤", "difficulty": "基本"},
+            {"text": "有機溶剤による健康障害を教えてください", "field": "有機溶剤", "difficulty": "標準"},
+            {"text": "有機溶剤の吸収経路と排泄経路について教えてください", "field": "有機溶剤", "difficulty": "標準"},
+            {"text": "有機溶剤特殊健診について教えてください", "field": "有機溶剤", "difficulty": "標準"},
+            {"text": "GHSとは何ですか？分類はどのようになっていますか？", "field": "化学物質管理", "difficulty": "基本"},
+            {"text": "化学物質のリスク評価において、危険性評価と有害性評価の違いを説明してください", "field": "化学物質管理", "difficulty": "応用"},
+            {"text": "健康診断の種類はどのようなものがありますか？", "field": "健康管理", "difficulty": "基本"},
+            {"text": "労働衛生コンサルタントとは何ですか？", "field": "法令", "difficulty": "基本"},
+            {"text": "労働衛生委員会の構成メンバーを述べてください", "field": "法令", "difficulty": "標準"},
+            {"text": "作業環境測定の手順は？", "field": "労働衛生管理", "difficulty": "標準"},
+            {"text": "騒音職場の健康管理項目を述べてください", "field": "騒音", "difficulty": "標準"},
+            {"text": "産業医の職務は何か。主要な3つを述べてください", "field": "法令", "difficulty": "応用"},
+            {"text": "一般健康診断に含まれる項目を述べてください", "field": "健康管理", "difficulty": "標準"},
+            {"text": "健康診断後の医学的判定で就業制限が必要な事例を挙げてください", "field": "健康管理", "difficulty": "応用"},
+            {"text": "労働衛生マネジメントシステム（OSHMS）とは何ですか？", "field": "労働衛生管理", "difficulty": "標準"},
+            {"text": "労働安全衛生のPDCAサイクルとは？", "field": "労働衛生管理", "difficulty": "基本"},
+            {"text": "安全衛生管理体制とは何ですか？", "field": "労働衛生管理", "difficulty": "標準"},
+            {"text": "ストレスチェック制度の目的は何ですか？", "field": "健康管理", "difficulty": "基本"},
+            {"text": "メンタルヘルス対策の4つのケアについて説明してください", "field": "健康管理", "difficulty": "標準"},
+            {"text": "熱中症の予防対策を述べてください", "field": "健康管理", "difficulty": "標準"}
+        ];
+        
+        let currentIndex = 0;
+        let timeRemaining = 15 * 60;
+        let timerInterval = null;
+        let practicing = false;
+        let sessionAnswers = [];
+        
+        // === UI制御 ===
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tab === 'history') updateHistory();
+        }
+        
+        function startPractice() {
+            currentIndex = 0;
+            timeRemaining = 15 * 60;
+            practicing = true;
+            sessionAnswers = [];
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('practiceScreen').style.display = 'block';
+            document.getElementById('totalQuestions').textContent = questions.length;
+            
+            displayQuestion();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        
+        function displayQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById('questionText').textContent = q.text;
+            document.getElementById('questionMeta').textContent = `${q.field} | ${q.difficulty}`;
+            document.getElementById('currentQuestion').textContent = currentIndex + 1;
+            document.getElementById('answerText').value = '';
+            document.getElementById('answerText').focus();
+            
+            const progress = ((currentIndex + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+        
+        function updateTimer() {
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                endPractice();
+                return;
+            }
+            
+            timeRemaining--;
+            const min = Math.floor(timeRemaining / 60);
+            const sec = timeRemaining % 60;
+            const display = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+            
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = display;
+            
+            if (timeRemaining <= 60) timerEl.className = 'timer danger';
+            else if (timeRemaining <= 300) timerEl.className = 'timer warning';
+            else timerEl.className = 'timer';
+        }
+        
+        function saveAndNext() {
+            const answer = document.getElementById('answerText').value.trim();
+            if (answer) {
+                sessionAnswers.push({
+                    question: questions[currentIndex].text,
+                    field: questions[currentIndex].field,
+                    difficulty: questions[currentIndex].difficulty,
+                    answer: answer,
+                    timestamp: new Date().toLocaleString('ja-JP')
+                });
+                
+                // LocalStorage に保存
+                let history = JSON.parse(localStorage.getItem('practiceHistory') || '[]');
+                history.push(sessionAnswers[sessionAnswers.length - 1]);
+                localStorage.setItem('practiceHistory', JSON.stringify(history.slice(-100)));
+            }
+            
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                displayQuestion();
+            } else {
+                endPractice();
+            }
+        }
+        
+        function skipQuestion() {
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                displayQuestion();
+            } else {
+                endPractice();
+            }
+        }
+        
+        function endPractice() {
+            clearInterval(timerInterval);
+            practicing = false;
+            
+            document.getElementById('practiceScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('startScreen').innerHTML = `
+                <div style="background: #e8f5e9; border: 1px solid #4caf50; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #2e7d32; margin-bottom: 10px;">✅ 練習完了</h2>
+                    <p style="color: #666; margin-bottom: 10px;">
+                        ${sessionAnswers.length}問の回答を保存しました。
+                    </p>
+                    <p style="color: #999; font-size: 12px;">
+                        「📋 回答履歴」タブで確認できます。
+                    </p>
+                </div>
+                <button class="btn-primary" onclick="location.reload()" style="width: 100%; padding: 15px; font-size: 16px;">🚀 もう一度練習</button>
+            `;
+        }
+        
+        function updateHistory() {
+            const history = JSON.parse(localStorage.getItem('practiceHistory') || '[]');
+            const sessions = new Set(history.map(h => h.timestamp.split(' ')[0])).size;
+            
+            document.getElementById('totalAnswers').textContent = history.length;
+            document.getElementById('totalSessions').textContent = sessions;
+            
+            if (history.length === 0) {
+                document.getElementById('historyList').innerHTML = '<p style="text-align: center; color: #999;">回答履歴がありません</p>';
+                return;
+            }
+            
+            document.getElementById('historyList').innerHTML = history.reverse().map(item => `
+                <div class="result-item">
+                    <div class="result-question">Q: ${item.question}</div>
+                    <div class="result-answer"><strong>A:</strong> ${item.answer}</div>
+                    <div class="result-date">📅 ${item.timestamp} | 分野：${item.field}</div>
+                </div>
+            `).join('');
+        }
+        
+        function clearHistory() {
+            if (confirm('すべての回答履歴を削除しますか？')) {
+                localStorage.removeItem('practiceHistory');
+                updateHistory();
+            }
+        }
+    </script>
+</body>
+</html>
