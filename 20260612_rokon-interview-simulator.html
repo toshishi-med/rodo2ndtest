@@ -565,20 +565,60 @@ function showErr(msg) {
 function esc(s) {
   return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
+// 読み上げ前テキスト整形
+const ABBREV = [
+  [/\bRA\b/g,    'リスクアセスメント'],
+  [/\bSDS\b/g,   'エスディーエス'],
+  [/\bGHS\b/g,   'ジーエイチエス'],
+  [/\bWBGT\b/g,  'ダブリュービージーティー'],
+  [/\bIARC\b/g,  'アイエーアールシー'],
+  [/\bTHP\b/g,   'ティーエイチピー'],
+  [/\bPDCA\b/g,  'ピーディーシーエー'],
+  [/\bOSHMS\b/g, 'オーエスエイチエムエス'],
+  [/\bMOCA\b/g,  'モカ'],
+  [/\b4S\b/g,    'よんエス'],
+  [/\b5S\b/g,    'ごエス'],
+  [/\bA測定\b/g,  'エー測定'],
+  [/\bB測定\b/g,  'ビー測定'],
+  [/\bC測定\b/g,  'シー測定'],
+  [/\bD測定\b/g,  'ディー測定'],
+];
+function cleanForSpeech(text) {
+  let s = text;
+  // 略語を先に展開
+  for (const [re, rep] of ABBREV) s = s.replace(re, rep);
+  // 全角スペース削除
+  s = s.replace(/\u3000/g, '');
+  // 日本語文字の間にあるスペースを削除（PPTXの抽出アーティファクト対策）
+  for (let i = 0; i < 6; i++) {
+    s = s.replace(/([\u3040-\u9FFF\uF900-\uFAFF])\s+([\u3040-\u9FFF\uF900-\uFAFF])/g, '$1$2');
+  }
+  // 残るスペースを読点に
+  s = s.replace(/\s+/g, '、');
+  // 記号整理
+  s = s.replace(/[「」『』]/g, '');
+  s = s.replace(/[（(]/g, '、');
+  s = s.replace(/[）)]/g, '。');
+  s = s.replace(/[\/／]/g, 'または');
+  s = s.replace(/[、。]{2,}/g, '。');
+  return s.trim();
+}
+
 function speakA(text) {
   return new Promise(resolve => {
     if (!window.speechSynthesis) { resolve(); return; }
     speechSynthesis.cancel();
 
-    // 句点・？・！で分割して短い塊にする（Chrome Androidの途切れバグ対策）
-    const parts = text
+    // テキスト整形してから句点で分割
+    const cleaned = cleanForSpeech(text);
+    const parts = cleaned
       .replace(/([。！？])/g, '$1|||')
       .split('|||')
       .map(s => s.trim())
       .filter(s => s.length > 0);
     if (!parts.length) { resolve(); return; }
 
-    // Chrome Android: 15秒で停止するバグ → 定期的にresume
+    // Chrome Android: 停止バグ対策
     const keepAlive = setInterval(() => {
       if (window.speechSynthesis && speechSynthesis.paused) speechSynthesis.resume();
     }, 5000);
@@ -588,11 +628,11 @@ function speakA(text) {
       if (i >= parts.length) { clearInterval(keepAlive); resolve(); return; }
       const u = new SpeechSynthesisUtterance(parts[i++]);
       u.lang = 'ja-JP';
-      u.rate = 0.92;
-      u.pitch = 0.88;
+      u.rate = 0.95;  // 自然なペース
+      u.pitch = 1.0;  // デフォルト音程（0.88は不自然）
       u.volume = 1.0;
-      u.onend = () => setTimeout(next, 80);
-      u.onerror = () => setTimeout(next, 80);
+      u.onend = () => setTimeout(next, 100);
+      u.onerror = () => setTimeout(next, 100);
       speechSynthesis.speak(u);
     }
     next();
