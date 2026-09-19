@@ -569,10 +569,33 @@ function speakA(text) {
   return new Promise(resolve => {
     if (!window.speechSynthesis) { resolve(); return; }
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'ja-JP'; u.rate = 0.86; u.pitch = 0.88;
-    u.onend = resolve; u.onerror = resolve;
-    speechSynthesis.speak(u);
+
+    // 句点・？・！で分割して短い塊にする（Chrome Androidの途切れバグ対策）
+    const parts = text
+      .replace(/([。！？])/g, '$1|||')
+      .split('|||')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+    if (!parts.length) { resolve(); return; }
+
+    // Chrome Android: 15秒で停止するバグ → 定期的にresume
+    const keepAlive = setInterval(() => {
+      if (window.speechSynthesis && speechSynthesis.paused) speechSynthesis.resume();
+    }, 5000);
+
+    let i = 0;
+    function next() {
+      if (i >= parts.length) { clearInterval(keepAlive); resolve(); return; }
+      const u = new SpeechSynthesisUtterance(parts[i++]);
+      u.lang = 'ja-JP';
+      u.rate = 0.92;
+      u.pitch = 0.88;
+      u.volume = 1.0;
+      u.onend = () => setTimeout(next, 80);
+      u.onerror = () => setTimeout(next, 80);
+      speechSynthesis.speak(u);
+    }
+    next();
   });
 }
 function pause(ms) { return new Promise(r=>setTimeout(r,ms)); }
